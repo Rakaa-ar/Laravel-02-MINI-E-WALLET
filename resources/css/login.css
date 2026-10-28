@@ -1,0 +1,108 @@
+body.login-body {
+    background-color: #0f1015; /* Latar belakang gelap sepenuhnya */
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    background-color: #171923;
+    border: 1px solid #2d3748;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.input-group-custom {
+    background-color: #1c1d24;
+    border: 1px solid #2d2e36;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    margin-bottom: 1rem;
+}
+
+.input-group-custom i {
+    color: #8a8d9a;
+}
+
+.login-input {
+    background-color: transparent !important;
+    border: none !important;
+    color: white !important;
+    box-shadow: none !important;
+    padding: 12px 10px;
+    width: 100%;
+}
+
+.login-input:focus {
+    outline: none;
+}
+
+.input-group-custom:focus-within {
+    border-color: #805ad5;
+}
+
+.btn-purple {
+    background: linear-gradient(90deg, #6b46c1 0%, #805ad5 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-purple:hover {
+    background: linear-gradient(90deg, #553c9a 0%, #6b46c1 100%);
+}
+
+.text-purple {
+    color: #805ad5;
+}
+
+.text-abu {
+  color: #9ca3af !important;
+}
+
+
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #8a8d9a;
+    font-size: 0.85rem;
+    margin: 24px 0;
+}
+
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #2d2e36;
+}
+
+.divider::before { margin-right: .5em; }
+.divider::after { margin-left: .5em; }
+
+
+.social-btn {
+    background-color: #1c1d24;
+    border: 1px solid #2d2e36;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+}
+
+.social-btn:hover {
+    background-color: #2d2e36;
+}
