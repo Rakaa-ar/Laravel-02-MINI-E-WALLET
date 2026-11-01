@@ -14,12 +14,34 @@
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
-                <h3 class="fw-bold mb-1">Overview Keuangan</h3>
-                <p class="text-muted mb-0">Halo Raka, kelola saldomu di sini.</p>
+                <h3 class="fw-bold mb-1 text-white">Overview Keuangan</h3>
+                <p class="text-secondary mb-0">Halo {{ Auth::user()->name ?? 'Raka' }}, kelola saldomu di sini.</p>
             </div>
-            <div class="bg-white p-1 rounded-circle shadow-sm">
-                <img src="https://ui-avatars.com/api/?name=Raka+Pradiva&background=4318ff&color=fff" alt="Profile"
-                    class="rounded-circle" width="48">
+
+            <!-- Wrapper buat tombol Logout & Avatar -->
+            <div class="d-flex align-items-center gap-3">
+
+                <!-- Tombol Logout -->
+                <form action="{{ route('logout') }}" method="POST" class="m-0">
+                    @csrf
+                    <button type="submit"
+                        class="btn btn-outline-danger btn-sm rounded-pill px-3 d-flex align-items-center gap-2 fw-semibold">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z" />
+                            <path fill-rule="evenodd"
+                                d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
+                        </svg>
+                        Logout
+                    </button>
+                </form>
+
+                <div class="bg-white p-1 rounded-circle shadow-sm d-flex">
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name ?? 'Raka Pradiva') }}&background=6f42c1&color=fff"
+                        alt="Profile" class="rounded-circle" width="48" height="48">
+                </div>
+
             </div>
         </div>
 
@@ -151,6 +173,7 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

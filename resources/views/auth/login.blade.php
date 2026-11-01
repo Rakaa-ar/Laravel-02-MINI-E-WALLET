@@ -43,7 +43,7 @@
             </div>
 
             <div class="text-end mb-4">
-                <a href="#" class="text-decoration-none text-purple" style="font-size: 0.85rem;">Forgot
+                <a href="forgot-password" class="text-decoration-none text-purple" style="font-size: 0.85rem;">Forgot
                     Password?</a>
             </div>
 

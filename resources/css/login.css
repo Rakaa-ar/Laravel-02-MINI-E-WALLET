@@ -71,7 +71,6 @@ body.login-body {
   color: #9ca3af !important;
 }
 
-
 .divider {
     display: flex;
     align-items: center;
@@ -105,4 +104,50 @@ body.login-body {
 
 .social-btn:hover {
     background-color: #2d2e36;
+}
+
+       /* Styling Form Auth & Register (Samakan dengan Tema Login) */
+.card-auth {
+    background-color: #141724;
+    border: 1px solid #202436;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 420px;
+}
+
+.form-control-dark {
+    background-color: #1a1e2e !important;
+    border: 1px solid #292e45 !important;
+    color: #ffffff !important;
+    border-radius: 8px;
+    padding: 0.65rem 1rem;
+}
+
+.form-control-dark::placeholder {
+    color: #64748b !important;
+}
+
+.form-control-dark:focus {
+    background-color: #1a1e2e !important;
+    border-color: #7257e7 !important;
+    box-shadow: 0 0 0 0.2rem rgba(114, 87, 231, 0.25) !important;
+}
+
+.btn-purple {
+    background-color: #7257e7;
+    border: none;
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 0.65rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-purple:hover {
+    background-color: #5f45d4;
+    color: #ffffff;
+}
+
+.text-purple {
+    color: #7257e7 !important;
 }
