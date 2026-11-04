@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
 
 class WalletController extends Controller
 {
     public function index()
     {
-        $dompet = Wallet::first();
+        $dompet = Wallet::firstOrCreate(
+            ['user_id' => Auth::id()],
+            ['saldo' => 0]
+        );
 
         $riwayat = $dompet->transaksi()->latest()->paginate(5);
 
@@ -25,7 +29,10 @@ class WalletController extends Controller
             'keterangan' => 'nullable|string'
         ]);
 
-        $dompet = Wallet::first();
+        $dompet = Wallet::firstOrCreate(
+            ['user_id' => Auth::id()],
+            ['saldo' => 0]
+        );
 
         try {
             $response = Http::timeout(5)->post('http://localhost:8080/api/transaksi', [

@@ -59,7 +59,9 @@
 
                 <div class="card card-custom p-4">
                     <h5 class="fw-bold mb-4">Buat Transaksi</h5>
-                    <form action="/dompet/transaksi" method="POST">
+                    
+                    <!-- ID form ditambahkan -->
+                    <form action="/dompet/transaksi" method="POST" id="formTransaksi">
                         @csrf
                         <div class="mb-3">
                             <label class="form-label text-muted small fw-semibold">JENIS TRANSAKSI</label>
@@ -69,18 +71,25 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="jumlah" class="form-label">NOMINAL (RP)</label>
-                            <input type="text" id="jumlah_formatted" class="form-control" name="jumlah"
-                                min="1000" placeholder="Contoh 50.000" required>
-                            <input type="hidden" name="jumlah" id="jumlah">
+                            <label for="jumlah_formatted" class="form-label text-muted small fw-semibold">NOMINAL (RP)</label>
+                            
+                            <!-- Input tampilan (NAMA DIHAPUS BIAR GAK BENTROK) -->
+                            <input type="text" id="jumlah_formatted" class="form-control"
+                                placeholder="Contoh 50.000" required autocomplete="off">
+                            
+                            <!-- Input hidden (HANYA INI YANG DIKIRIM KE LARAVEL) -->
+                            <input type="hidden" name="jumlah" id="jumlah" required>
                         </div>
                         <div class="mb-4">
                             <label class="form-label text-muted small fw-semibold">KETERANGAN</label>
                             <input type="text" class="form-control" name="keterangan"
                                 placeholder="Contoh: Jajan siomay">
                         </div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-send-fill me-2"></i>Proses
-                            Sekarang</button>
+                        
+                        <!-- ID tombol ditambahkan -->
+                        <button type="submit" id="btnProses" class="btn btn-primary w-100">
+                            <i class="bi bi-send-fill me-2"></i>Proses Sekarang
+                        </button>
                     </form>
                 </div>
             </div>
@@ -103,19 +112,6 @@
                             <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
                         </div>
                     @endif
-                    <script>
-                        setTimeout(function() {
-                            let alertBox = document.getElementById('alert-box');
-                            if (alertBox) {
-                                // Efek fade-out pelan-pelan atau langsung hilangkan
-                                alertBox.style.transition = "opacity 0.5s ease";
-                                alertBox.style.opacity = "0";
-                                setTimeout(function() {
-                                    alertBox.remove();
-                                }, 500); // Hapus elemen dari HTML setelah transisi selesai
-                            }
-                        }, 3000); // Waktu 3 detik
-                    </script>
 
                     <div class="table-responsive">
                         <table class="table table-borderless align-middle mb-0">
@@ -173,28 +169,68 @@
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SCRIPT FORMATTING RUPIAH & ANTI DOUBLE CLICK -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('formTransaksi');
+            const btn = document.getElementById('btnProses');
+            const inputFormatted = document.getElementById('jumlah_formatted');
+            const inputHidden = document.getElementById('jumlah');
+            const alertBox = document.getElementById('alert-box');
+
+            // Auto-hide alert notification
+            if (alertBox) {
+                setTimeout(function() {
+                    alertBox.style.transition = "opacity 0.5s ease";
+                    alertBox.style.opacity = "0";
+                    setTimeout(function() { alertBox.remove(); }, 500);
+                }, 3000);
+            }
+
+            // Real-time format mata uang Rupiah
+            function updateJumlah() {
+                let angka = inputFormatted.value.replace(/[^,\d]/g, '');
+                let split = angka.split(',');
+                let sisa = split[0].length % 3;
+                let rupiah = split[0].substr(0, sisa);
+                let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+                if (ribuan) {
+                    let separator = sisa ? '.' : '';
+                    rupiah += separator + ribuan.join('.');
+                }
+
+                rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
+                inputFormatted.value = rupiah;
+                
+                // Isi nilai angka murni ke input hidden
+                inputHidden.value = split[0];
+            }
+
+            inputFormatted.addEventListener('input', updateJumlah);
+            inputFormatted.addEventListener('keyup', updateJumlah);
+
+            // Handler submit form & Anti Double-Click
+            form.addEventListener('submit', function (e) {
+                updateJumlah();
+
+                if (!inputHidden.value || parseInt(inputHidden.value) < 1000) {
+                    e.preventDefault();
+                    alert('Nominal minimal transaksi adalah Rp 1.000');
+                    return false;
+                }
+
+                // Beri jeda 10ms agar browser sempat mengantrekan request POST
+                setTimeout(function () {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses...';
+                }, 10);
+            });
+        });
+    </script>
 </body>
 
 </html>
-<script>
-    const inputFormatted = document.getElementById('jumlah_formatted');
-    const inputHidden = document.getElementById('jumlah');
-
-    inputFormatted.addEventListener('keyup', function(e) {
-        let angka = this.value.replace(/[^,\d]/g, '');
-        let split = angka.split(',');
-        let sisa = split[0].length % 3;
-        let rupiah = split[0].substr(0, sisa);
-        let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
-
-        if (ribuan) {
-            let separator = sisa ? '.' : '';
-            rupiah += separator + ribuan.join('.');
-        }
-
-        rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
-        this.value = rupiah;
-        inputHidden.value = angka;
-    });
-</script>

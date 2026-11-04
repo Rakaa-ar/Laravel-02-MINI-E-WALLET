@@ -6,7 +6,7 @@ use App\Http\Controllers\WalletController;
 use App\Http\Controllers\AuthController;
 
 
-
+Route::middleware('guest')->group(function () {
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -28,13 +28,12 @@ Route::post('/reset-password', [AuthController::class, 'processResetPassword'])-
 
 Route::get('/forgot-password/verify-otp', [AuthController::class, 'showResetOtpForm'])->name('password.otp.form');
 Route::post('/forgot-password/verify-otp', [AuthController::class, 'verifyResetOtp'])->name('password.otp.verify');
+});
 
 
-
-
-
-
+Route::middleware('auth')->group(function () {
 Route::get('/dompet', [WalletController::class, 'index']);
 Route::post('/dompet/transaksi', [WalletController::class, 'store']);
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});

@@ -33,4 +33,9 @@ class User extends Authenticatable
             'is_verified'       => 'boolean',
         ];
     }
+
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
 }
