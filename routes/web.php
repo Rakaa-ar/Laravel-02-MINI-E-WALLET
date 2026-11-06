@@ -35,5 +35,9 @@ Route::middleware('auth')->group(function () {
 Route::get('/dompet', [WalletController::class, 'index']);
 Route::post('/dompet/transaksi', [WalletController::class, 'store']);
 
+Route::post('dompet/transfer', [WalletController::class, 'transfer'])->name('transfer');
+
+
+
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

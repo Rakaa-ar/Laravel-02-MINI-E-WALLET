@@ -47,19 +47,25 @@
 
         <div class="row g-4">
             <div class="col-lg-4">
+                <button type="button"
+                    class="btn btn-outline-info w-100 mb-3 py-2 fw-bold d-flex align-items-center justify-content-center gap-2 rounded-3"
+                    data-bs-toggle="modal" data-bs-target="#modalTransfer">
+                    <i class="bi bi-arrow-left-right fs-5"></i> Transfer Saldo
+                </button>
                 <div class="card wallet-card p-4 mb-4">
                     <p class="mb-2 opacity-75 small fw-semibold">TOTAL SALDO</p>
                     <h2 class="fw-bold mb-4">Rp {{ number_format($dompet->saldo, 0, ',', '.') }}</h2>
                     <div class="d-flex">
                         <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill">
-                            <i class="bi bi-wallet2 me-1"></i> ID Dompet: #{{ $dompet->id }}
+                            <i class="bi bi-person-badge me-1"></i> ID User:
+                            {{ Auth::user()->account_number ?? '------' }}
                         </span>
                     </div>
                 </div>
 
                 <div class="card card-custom p-4">
                     <h5 class="fw-bold mb-4">Buat Transaksi</h5>
-                    
+
                     <!-- ID form ditambahkan -->
                     <form action="/dompet/transaksi" method="POST" id="formTransaksi">
                         @csrf
@@ -71,12 +77,13 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="jumlah_formatted" class="form-label text-muted small fw-semibold">NOMINAL (RP)</label>
-                            
+                            <label for="jumlah_formatted" class="form-label text-muted small fw-semibold">NOMINAL
+                                (RP)</label>
+
                             <!-- Input tampilan (NAMA DIHAPUS BIAR GAK BENTROK) -->
-                            <input type="text" id="jumlah_formatted" class="form-control"
-                                placeholder="Contoh 50.000" required autocomplete="off">
-                            
+                            <input type="text" id="jumlah_formatted" class="form-control" placeholder="Contoh 50.000"
+                                required autocomplete="off">
+
                             <!-- Input hidden (HANYA INI YANG DIKIRIM KE LARAVEL) -->
                             <input type="hidden" name="jumlah" id="jumlah" required>
                         </div>
@@ -85,7 +92,7 @@
                             <input type="text" class="form-control" name="keterangan"
                                 placeholder="Contoh: Jajan siomay">
                         </div>
-                        
+
                         <!-- ID tombol ditambahkan -->
                         <button type="submit" id="btnProses" class="btn btn-primary w-100">
                             <i class="bi bi-send-fill me-2"></i>Proses Sekarang
@@ -159,6 +166,53 @@
                                         </td>
                                     </tr>
                                 @endforelse
+                                <!-- Modal Transfer 6 Digit ID -->
+                                <div class="modal fade" id="modalTransfer" tabindex="-1"
+                                    aria-labelledby="modalTransferLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content text-white"
+                                            style="background-color: #141724; border: 1px solid #202436; border-radius: 16px;">
+                                            <div class="modal-header border-0 pb-0">
+                                                <h5 class="modal-title fw-bold" id="modalTransferLabel">
+                                                    <i class="bi bi-send-fill me-2 text-primary"></i>Transfer Saldo
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form action="{{ route('transfer') }}" method="POST" id="formTransfer">
+                                                @csrf
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label text-muted small fw-semibold">ID USER
+                                                            PENERIMA (6 DIGIT)</label>
+                                                        <input type="text" name="account_number"
+                                                            class="form-control text-center fw-bold fs-4 letter-spacing-2"
+                                                            maxlength="6" placeholder="Contoh: 345678" required
+                                                            autocomplete="off">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label text-muted small fw-semibold">NOMINAL
+                                                            TRANSFER (RP)</label>
+                                                        <input type="number" name="jumlah" class="form-control"
+                                                            min="1000" placeholder="Minimal 1.000" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label text-muted small fw-semibold">CATATAN
+                                                            / KETERANGAN</label>
+                                                        <input type="text" name="keterangan" class="form-control"
+                                                            placeholder="Contoh: Bayar jajan siomay">
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer border-0 pt-0">
+                                                    <button type="button" class="btn btn-secondary rounded-3"
+                                                        data-bs-dismiss="modal">Batal</button>
+                                                    <button type="submit" id="btnProsesTransfer"
+                                                        class="btn btn-primary rounded-3 px-4">Kirim Sekarang</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </tbody>
                         </table>
                         <div class="mt-4 w-100">
@@ -174,7 +228,7 @@
 
     <!-- SCRIPT FORMATTING RUPIAH & ANTI DOUBLE CLICK -->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('formTransaksi');
             const btn = document.getElementById('btnProses');
             const inputFormatted = document.getElementById('jumlah_formatted');
@@ -186,7 +240,9 @@
                 setTimeout(function() {
                     alertBox.style.transition = "opacity 0.5s ease";
                     alertBox.style.opacity = "0";
-                    setTimeout(function() { alertBox.remove(); }, 500);
+                    setTimeout(function() {
+                        alertBox.remove();
+                    }, 500);
                 }, 3000);
             }
 
@@ -205,7 +261,7 @@
 
                 rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
                 inputFormatted.value = rupiah;
-                
+
                 // Isi nilai angka murni ke input hidden
                 inputHidden.value = split[0];
             }
@@ -214,7 +270,7 @@
             inputFormatted.addEventListener('keyup', updateJumlah);
 
             // Handler submit form & Anti Double-Click
-            form.addEventListener('submit', function (e) {
+            form.addEventListener('submit', function(e) {
                 updateJumlah();
 
                 if (!inputHidden.value || parseInt(inputHidden.value) < 1000) {
@@ -224,11 +280,20 @@
                 }
 
                 // Beri jeda 10ms agar browser sempat mengantrekan request POST
-                setTimeout(function () {
+                setTimeout(function() {
                     btn.disabled = true;
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses...';
+                    btn.innerHTML =
+                        '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses...';
                 }, 10);
             });
+        });
+
+        document.getElementById('formTransfer').addEventListener('submit', function() {
+            const btn = document.getElementById('btnProsesTransfer');
+            setTimeout(function() {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengirim...';
+            }, 10);
         });
     </script>
 </body>
