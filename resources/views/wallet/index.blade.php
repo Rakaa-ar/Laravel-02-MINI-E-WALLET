@@ -135,10 +135,10 @@
                                     <tr class="border-bottom">
                                         <td>
                                             <div class="d-flex align-items-center gap-3">
-                                                <div
-                                                    class="icon-box {{ $item->jenis == 'masuk' ? 'bg-masuk' : 'bg-keluar' }}">
+                                                <div class="icon-box {{ $item->jenis == 'masuk' ? 'bg-masuk' : 'bg-keluar' }} d-flex justify-content-center align-items-center rounded-2"
+                                                    style="width: 42px; height: 42px; flex-shrink: 0;">
                                                     <i
-                                                        class="bi {{ $item->jenis == 'masuk' ? 'bi-arrow-down-left' : 'bi-arrow-up-right' }}"></i>
+                                                        class="bi {{ $item->jenis == 'masuk' ? 'bi-arrow-down-left' : 'bi-arrow-up-right' }} fs-5"></i>
                                                 </div>
                                                 <div>
                                                     <h6 class="mb-0 fw-semibold text-dark">
@@ -193,8 +193,12 @@
                                                     <div class="mb-3">
                                                         <label class="form-label text-muted small fw-semibold">NOMINAL
                                                             TRANSFER (RP)</label>
-                                                        <input type="number" name="jumlah" class="form-control"
-                                                            min="1000" placeholder="Minimal 1.000" required>
+                                                        <input type="text" id="inputRupiah" class="form-control"
+                                                            min="1000" placeholder="Minimal 1.000" required
+                                                            autocomplete="off">
+
+                                                        <input type="hidden" name="jumlah" id="inputJumlahAsli"
+                                                            min="1000" required>
                                                     </div>
                                                     <div class="mb-3">
                                                         <label class="form-label text-muted small fw-semibold">CATATAN
@@ -294,6 +298,23 @@
                 btn.disabled = true;
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengirim...';
             }, 10);
+        });
+        const inputRupiah = document.getElementById('inputRupiah');
+        const inputJumlahAsli = document.getElementById('inputJumlahAsli');
+
+        inputRupiah.addEventListener('input', function(e) {
+            // Hapus semua karakter selain angka
+            let angkaMurni = this.value.replace(/[^0-9]/g, '');
+
+            // Simpan angka murni ke input hidden untuk dikirim ke Controller
+            inputJumlahAsli.value = angkaMurni;
+
+            // Format angka murninya jadi format ribuan Indonesia 
+            if (angkaMurni !== '') {
+                this.value = new Intl.NumberFormat('id-ID').format(angkaMurni);
+            } else {
+                this.value = '';
+            }
         });
     </script>
 </body>

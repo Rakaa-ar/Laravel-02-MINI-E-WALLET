@@ -83,7 +83,7 @@ class WalletController extends Controller
     public function transfer(Request $request)
     {
         // 1. Validasi Input (Wajib 6 digit angka & harus ada di database)
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'account_number' => 'required|numeric|digits:6|exists:users,account_number',
             'jumlah'         => 'required|numeric|min:1000',
             'keterangan'     => 'nullable|string|max:255',
@@ -94,12 +94,16 @@ class WalletController extends Controller
             'jumlah.min'              => 'Nominal transfer minimal Rp 1.000.',
         ]);
 
+        if ($validator->fails()) {
+            return back()->with('error', $validator->errors()->first());
+        }
+
         $pengirimUser   = Auth::user();
         $pengirimWallet = Wallet::where('user_id', $pengirimUser->id)->first();
 
         //Cegah transfer ke ID sendiri
         if ((string)$pengirimUser->account_number === (string)$request->account_number) {
-            return back()->with('error', 'Nggak bisa transfer ke ID User sendiri!');
+            return back()->with('error', 'engga bisa transfer ke ID User sendiri!');
         }
 
         //Cari User & Wallet Penerima berdasarkan 6 Digit ID
