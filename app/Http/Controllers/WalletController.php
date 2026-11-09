@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Transaksi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
@@ -85,38 +86,50 @@ class WalletController extends Controller
 
     public function transfer(Request $request)
     {
-        //Validasi Input 
+        // Validasi Input
         $validator = Validator::make($request->all(), [
             'account_number' => 'required|numeric|digits:6|exists:users,account_number',
             'jumlah'         => 'required|numeric|min:1000',
             'keterangan'     => 'nullable|string|max:255',
+            'pin'            => 'required|numeric|digits:6', // Validasi input PIN
         ], [
             'account_number.required' => 'ID User tujuan wajib diisi.',
             'account_number.digits'   => 'ID User harus 6 digit angka.',
             'account_number.exists'   => 'ID User penerima tidak ditemukan!',
             'jumlah.min'              => 'Nominal transfer minimal Rp 1.000.',
+            'pin.required'            => 'PIN Keamanan wajib dimasukkan.',
+            'pin.digits'              => 'PIN harus 6 digit angka.',
         ]);
 
         if ($validator->fails()) {
             return back()->with('error', $validator->errors()->first());
         }
 
-        $pengirimUser   = Auth::user();
-        $pengirimWallet = Wallet::where('user_id', $pengirimUser->id)->first();
+        $pengirimUser = Auth::user();
 
-        //Cegah transfer ke ID sendiri
-        if ((string)$pengirimUser->account_number === (string)$request->account_number) {
-            return back()->with('error', 'engga bisa transfer ke ID User sendiri!');
+        if (!$pengirimUser->pin) {
+            return back()->with('error', 'Anda belum membuat PIN Keamanan. Silakan buat PIN terlebih dahulu!');
         }
 
-        //Cari User & Wallet Penerima berdasarkan 6 Digit ID
+        if (!Hash::check($request->pin, $pengirimUser->pin)) {
+            return back()->with('error', 'PIN Keamanan transaksi Anda salah!');
+        }
+
+        $pengirimWallet = Wallet::where('user_id', $pengirimUser->id)->first();
+
+        // Cegah transfer ke ID sendiri
+        if ((string)$pengirimUser->account_number === (string)$request->account_number) {
+            return back()->with('error', 'Tidak bisa transfer ke ID User sendiri!');
+        }
+
+        // Cari User & Wallet Penerima
         $penerimaUser   = User::where('account_number', $request->account_number)->first();
         $penerimaWallet = Wallet::firstOrCreate(
             ['user_id' => $penerimaUser->id],
             ['saldo'   => 0]
         );
 
-        //Cek Kecukupan Saldo ke Go Microservice
+        // Cek Kecukupan Saldo ke Go Microservice
         try {
             $response = Http::timeout(5)->post('http://localhost:8080/api/transaksi', [
                 'saldo_saat_ini' => (float) $pengirimWallet->saldo,
@@ -133,9 +146,9 @@ class WalletController extends Controller
             return back()->with('error', 'Koneksi ke Go Microservice gagal!');
         }
 
+        // Transaksi DB Atomik
         try {
             DB::transaction(function () use ($pengirimWallet, $penerimaWallet, $pengirimUser, $penerimaUser, $request, $result) {
-
                 $baseKode = 'TRX-' . date('YmdHis') . '-' . rand(100, 999);
 
                 $pengirimWallet->saldo = $result['sisa_saldo'];
@@ -143,9 +156,9 @@ class WalletController extends Controller
 
                 $pengirimWallet->transaksi()->create([
                     'kode_transaksi' => $baseKode . '-OUT',
-                    'jenis'      => 'keluar',
-                    'jumlah'     => $request->jumlah,
-                    'keterangan' => 'Transfer ke ' . $penerimaUser->name . ($request->keterangan ? ' - ' . $request->keterangan : '')
+                    'jenis'          => 'keluar',
+                    'jumlah'         => $request->jumlah,
+                    'keterangan'     => 'Transfer ke ' . $penerimaUser->name . ($request->keterangan ? ' - ' . $request->keterangan : '')
                 ]);
 
                 $penerimaWallet->saldo += $request->jumlah;
@@ -153,15 +166,15 @@ class WalletController extends Controller
 
                 $penerimaWallet->transaksi()->create([
                     'kode_transaksi' => $baseKode . '-IN',
-                    'jenis'      => 'masuk',
-                    'jumlah'     => $request->jumlah,
-                    'keterangan' => 'Transfer dari ' . $pengirimUser->name . ($request->keterangan ? ' - ' . $request->keterangan : '')
+                    'jenis'          => 'masuk',
+                    'jumlah'         => $request->jumlah,
+                    'keterangan'     => 'Transfer dari ' . $pengirimUser->name . ($request->keterangan ? ' - ' . $request->keterangan : '')
                 ]);
             });
 
-            return redirect('/dompet')->with('success', 'Transfer Rp ' . number_format($request->jumlah, 0, ',', '.') . ' ke ' . $penerimaUser->name . ' (' . $penerimaUser->account_number . ') berhasil!');
+            return redirect('/dompet')->with('success', 'Transfer Rp ' . number_format($request->jumlah, 0, ',', '.') . ' ke ' . $penerimaUser->name . ' berhasil!');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal memproses transaksi database.');
+            return back()->with('error', 'Gagal memproses transaksi database: ' . $e->getMessage());
         }
     }
 
@@ -172,5 +185,22 @@ class WalletController extends Controller
         $pdf = Pdf::loadView('wallet.struk', compact('transaksi'));
 
         return $pdf->stream('Struk-Transaksi-' . $kode_transaksi . '.pdf');
+    }
+
+    public function setPin(Request $request)
+    {
+        $request->validate([
+            'pin' => 'required|numeric|digits:6|confirmed',
+        ], [
+            'pin.required' => 'PIN Transaksi Wajib di isi',
+            'pin.digits' => 'PIN Harus Berupa 6 angka',
+            'pin.confirmed' => 'Konfirmasi PIN tidak cocok',
+        ]);
+
+        $user = User::find(Auth::id());
+        $user->pin = Hash::make($request->pin);
+        $user->save();
+
+        return back()->with('success', 'PIN transaksi berhasil dibuat! Silakan lanjutkan transaksi.');
     }
 }

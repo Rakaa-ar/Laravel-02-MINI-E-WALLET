@@ -87,10 +87,10 @@
                             <!-- Input hidden (HANYA INI YANG DIKIRIM KE LARAVEL) -->
                             <input type="hidden" name="jumlah" id="jumlah" required>
                         </div>
-                        <div class="mb-4">
-                            <label class="form-label text-muted small fw-semibold">KETERANGAN</label>
-                            <input type="text" class="form-control" name="keterangan"
-                                placeholder="Contoh: Jajan siomay">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-semibold">CATATAN / KETERANGAN</label>
+                            <input type="text" name="keterangan" class="form-control"
+                                placeholder="Contoh: Bayar jajan siomay">
                         </div>
 
                         <!-- ID tombol ditambahkan -->
@@ -153,7 +153,7 @@
                                             <span
                                                 class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill mb-1 d-block"
                                                 style="width: fit-content;">Selesai</span>
-                                                
+
                                             @if ($item->kode_transaksi)
                                                 <a href="{{ route('cetak.struk', $item->kode_transaksi) }}"
                                                     target="_blank"
@@ -176,6 +176,19 @@
                                         </td>
                                     </tr>
                                 @endforelse
+                                @if (!Auth::user()->pin)
+                                    <div
+                                        class="alert alert-warning border-0 rounded-4 mb-4 p-3 d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="bi bi-shield-lock-fill me-2 fs-5"></i>
+                                            <strong>Keamanan Akun:</strong> Anda belum membuat 6-Digit PIN Transaksi.
+                                        </div>
+                                        <button type="button" class="btn btn-dark btn-sm rounded-pill px-3"
+                                            data-bs-toggle="modal" data-bs-target="#modalSetPin">
+                                            Buat PIN Sekarang
+                                        </button>
+                                    </div>
+                                @endif
                                 <!-- Modal Transfer 6 Digit ID -->
                                 <div class="modal fade" id="modalTransfer" tabindex="-1"
                                     aria-labelledby="modalTransferLabel" aria-hidden="true">
@@ -216,12 +229,63 @@
                                                         <input type="text" name="keterangan" class="form-control"
                                                             placeholder="Contoh: Bayar jajan siomay">
                                                     </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label text-muted small fw-semibold">PIN
+                                                            KEAMANAN (6 DIGIT)</label>
+                                                        <input type="password" name="pin" class="form-control"
+                                                            maxlength="6" placeholder="******" required
+                                                            autocomplete="off">
+                                                    </div>
                                                 </div>
                                                 <div class="modal-footer border-0 pt-0">
                                                     <button type="button" class="btn btn-secondary rounded-3"
                                                         data-bs-dismiss="modal">Batal</button>
                                                     <button type="submit" id="btnProsesTransfer"
                                                         class="btn btn-primary rounded-3 px-4">Kirim Sekarang</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Modal Setup PIN -->
+                                <div class="modal fade" id="modalSetPin" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content text-white"
+                                            style="background-color: #141724; border: 1px solid #202436; border-radius: 16px;">
+                                            <div class="modal-header border-0 pb-0">
+                                                <h5 class="modal-title fw-bold"><i
+                                                        class="bi bi-shield-lock me-2 text-warning"></i>Buat PIN
+                                                    Transaksi</h5>
+                                                <button type="button" class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form action="{{ route('set.pin') }}" method="POST">
+                                                @csrf
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label text-muted small fw-semibold">PIN BARU
+                                                            (6 DIGIT ANGKA)</label>
+                                                        <input type="password" name="pin"
+                                                            class="form-control text-center fw-bold fs-4"
+                                                            maxlength="6" placeholder="******" required
+                                                            autocomplete="off">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label
+                                                            class="form-label text-muted small fw-semibold">KONFIRMASI
+                                                            PIN</label>
+                                                        <input type="password" name="pin_confirmation"
+                                                            class="form-control text-center fw-bold fs-4"
+                                                            maxlength="6" placeholder="******" required
+                                                            autocomplete="off">
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer border-0 pt-0">
+                                                    <button type="button" class="btn btn-secondary rounded-3"
+                                                        data-bs-dismiss="modal">Batal</button>
+                                                    <button type="submit"
+                                                        class="btn btn-warning rounded-3 px-4 fw-semibold">Simpan
+                                                        PIN</button>
                                                 </div>
                                             </form>
                                         </div>
