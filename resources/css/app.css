@@ -154,3 +154,39 @@ nav p.text-muted {
     color: #ffffff;
 }
 
+.struk-body { 
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; font-size: 14px; 
+}
+.struk-container { 
+    width: 100%; max-width: 400px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; 
+}
+.struk-header { 
+    text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px; 
+}
+.struk-header h2 { 
+    margin: 0; color: #6f42c1; font-size: 22px; letter-spacing: 1px; 
+}
+.struk-header p {
+    margin: 5px 0 0 0; color: #777; font-size: 12px; 
+}
+.struk-table {
+    width: 100%; border-collapse: collapse; 
+}
+.struk-table td 
+{ padding: 8px 0; 
+}
+.struk-text-right {
+    text-align: right; 
+    }
+.struk-fw-bold { 
+    font-weight: bold; 
+}
+.struk-text-success {
+    color: #198754; 
+    }
+.struk-total-section { 
+    border-top: 1px solid #ddd; margin-top: 10px; padding-top: 15px; font-size: 18px; 
+}
+.struk-footer {
+    text-align: center; margin-top: 30px; font-size: 11px; color: #999; 
+}

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini E-Wallet | Raka</title>
+    <title>E-Wallet | Raka</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -149,8 +149,18 @@
                                         </td>
                                         <td class="text-muted small fw-medium">
                                             {{ $item->created_at->format('d M Y, H:i') }}</td>
-                                        <td><span
-                                                class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Selesai</span>
+                                        <td>
+                                            <span
+                                                class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill mb-1 d-block"
+                                                style="width: fit-content;">Selesai</span>
+                                                
+                                            @if ($item->kode_transaksi)
+                                                <a href="{{ route('cetak.struk', $item->kode_transaksi) }}"
+                                                    target="_blank"
+                                                    class="badge bg-primary bg-opacity-10 text-primary px-2 py-1 text-decoration-none d-inline-block mt-1">
+                                                    <i class="bi bi-printer-fill me-1"></i> Struk
+                                                </a>
+                                            @endif
                                         </td>
                                         <td
                                             class="text-end fw-bold {{ $item->jenis == 'masuk' ? 'text-success' : 'text-dark' }}">

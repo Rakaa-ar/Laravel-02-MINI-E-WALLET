@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Wallet;
 use App\Models\User;
+use App\Models\Transaksi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
@@ -65,10 +67,11 @@ class WalletController extends Controller
                 return back()->with('error', $result['pesan']);
             }
         } catch (\Exception $e) {
-            return back()->with('error', 'Koneksi ke Microservice Go gagal, pastikan server Go menyala!');
+            return back()->with('error', 'Koneksi ke GO gagal, pastikan server Go menyala!');
         }
 
         $dompet->transaksi()->create([
+            'kode_transaksi' => 'TRX-' . date('YmdHis') . '-' . rand(100, 999),
             'jenis' => $request->jenis,
             'jumlah' => $request->jumlah,
             'keterangan' => $request->keterangan
@@ -77,12 +80,12 @@ class WalletController extends Controller
         $dompet->saldo = $result['sisa_saldo'];
         $dompet->save();
 
-        return redirect('/dompet')->with('success', 'Transaksi sukses diproses via Go Microservice!');
+        return redirect('/dompet')->with('success', 'Transaksi sukses!');
     }
 
     public function transfer(Request $request)
     {
-        // 1. Validasi Input (Wajib 6 digit angka & harus ada di database)
+        //Validasi Input 
         $validator = Validator::make($request->all(), [
             'account_number' => 'required|numeric|digits:6|exists:users,account_number',
             'jumlah'         => 'required|numeric|min:1000',
@@ -130,26 +133,26 @@ class WalletController extends Controller
             return back()->with('error', 'Koneksi ke Go Microservice gagal!');
         }
 
-        //Transaksi DB Atomik
         try {
             DB::transaction(function () use ($pengirimWallet, $penerimaWallet, $pengirimUser, $penerimaUser, $request, $result) {
-                // Potong Saldo Pengirim
+
+                $baseKode = 'TRX-' . date('YmdHis') . '-' . rand(100, 999);
+
                 $pengirimWallet->saldo = $result['sisa_saldo'];
                 $pengirimWallet->save();
 
-                // Catat Riwayat Pengirim
                 $pengirimWallet->transaksi()->create([
+                    'kode_transaksi' => $baseKode . '-OUT',
                     'jenis'      => 'keluar',
                     'jumlah'     => $request->jumlah,
                     'keterangan' => 'Transfer ke ' . $penerimaUser->name . ($request->keterangan ? ' - ' . $request->keterangan : '')
                 ]);
 
-                // Tambah Saldo Penerima
                 $penerimaWallet->saldo += $request->jumlah;
                 $penerimaWallet->save();
 
-                // Catat Riwayat Penerima
                 $penerimaWallet->transaksi()->create([
+                    'kode_transaksi' => $baseKode . '-IN',
                     'jenis'      => 'masuk',
                     'jumlah'     => $request->jumlah,
                     'keterangan' => 'Transfer dari ' . $pengirimUser->name . ($request->keterangan ? ' - ' . $request->keterangan : '')
@@ -160,5 +163,14 @@ class WalletController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memproses transaksi database.');
         }
+    }
+
+    public function cetakStruk($kode_transaksi)
+    {
+        $transaksi = Transaksi::where('kode_transaksi', $kode_transaksi)->firstOrFail();
+
+        $pdf = Pdf::loadView('wallet.struk', compact('transaksi'));
+
+        return $pdf->stream('Struk-Transaksi-' . $kode_transaksi . '.pdf');
     }
 }

@@ -34,8 +34,10 @@ Route::post('/forgot-password/verify-otp', [AuthController::class, 'verifyResetO
 Route::middleware('auth')->group(function () {
 Route::get('/dompet', [WalletController::class, 'index']);
 Route::post('/dompet/transaksi', [WalletController::class, 'store']);
-
 Route::post('dompet/transfer', [WalletController::class, 'transfer'])->name('transfer');
+
+Route::get('dompet/struk/{kode_transaksi}', [WalletController::class, 'cetakStruk'])->name('cetak.struk');
+
 
 
 

@@ -14,6 +14,7 @@ class User extends Authenticatable
         'email',
         'password',
         'account_number',
+        'pin',
         'google_id',
         'otp',
         'otp_expires_at',
