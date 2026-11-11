@@ -47,11 +47,18 @@
 
         <div class="row g-4">
             <div class="col-lg-4">
-                <button type="button"
-                    class="btn btn-outline-info w-100 mb-3 py-2 fw-bold d-flex align-items-center justify-content-center gap-2 rounded-3"
-                    data-bs-toggle="modal" data-bs-target="#modalTransfer">
-                    <i class="bi bi-arrow-left-right fs-5"></i> Transfer Saldo
-                </button>
+                <div class="d-flex gap-2 mb-2">
+                    <button type="button"
+                        class="btn btn-outline-info w-100 mb-3 py-2 fw-bold d-flex align-items-center justify-content-center gap-2 rounded-3"
+                        data-bs-toggle="modal" data-bs-target="#modalTarikTunai">
+                        <i class="bi bi-cash-stack fs-5"></i> Tarik Tunai
+                    </button>
+                    <button type="button"
+                        class="btn btn-outline-info w-100 mb-3 py-2 fw-bold d-flex align-items-center justify-content-center gap-2 rounded-3"
+                        data-bs-toggle="modal" data-bs-target="#modalTransfer">
+                        <i class="bi bi-arrow-left-right fs-5"></i> Transfer Saldo
+                    </button>
+                </div>
                 <div class="card wallet-card p-4 mb-4">
                     <p class="mb-2 opacity-75 small fw-semibold">TOTAL SALDO</p>
                     <h2 class="fw-bold mb-4">Rp {{ number_format($dompet->saldo, 0, ',', '.') }}</h2>
@@ -69,17 +76,15 @@
                     <!-- ID form ditambahkan -->
                     <form action="/dompet/transaksi" method="POST" id="formTransaksi">
                         @csrf
+                        <!-- Kunci jenis transaksi hanya untuk Top-Up -->
+                        <input type="hidden" name="jenis" value="masuk">
                         <div class="mb-3">
                             <label class="form-label text-muted small fw-semibold">JENIS TRANSAKSI</label>
-                            <select class="form-select" name="jenis" required>
-                                <option value="masuk">Top-Up Saldo</option>
-                                <option value="keluar">Tarik Tunai</option>
-                            </select>
+                            <input type="text" class="form-control" value="Top-Up Saldo" readonly>
                         </div>
                         <div class="mb-3">
                             <label for="jumlah_formatted" class="form-label text-muted small fw-semibold">NOMINAL
                                 (RP)</label>
-
                             <!-- Input tampilan (NAMA DIHAPUS BIAR GAK BENTROK) -->
                             <input type="text" id="jumlah_formatted" class="form-control" placeholder="Contoh 50.000"
                                 required autocomplete="off">
@@ -291,6 +296,61 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- Modal Tarik Tunai -->
+                                <div class="modal fade" id="modalTarikTunai" tabindex="-1"
+                                    aria-labelledby="modalTarikTunaiLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content text-white"
+                                            style="background-color: #141724; border: 1px solid #202436; border-radius: 16px;">
+                                            <div class="modal-header border-0 pb-0">
+                                                <h5 class="modal-title fw-bold" id="modalTarikTunaiLabel">
+                                                    <i class="bi bi-cash-stack me-2 text-warning"></i>Tarik Tunai Saldo
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form action="/dompet/transaksi" method="POST">
+                                                @csrf
+                                                <input type="hidden" name="jenis" value="keluar">
+
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label text-muted small fw-semibold">NOMINAL
+                                                            PENARIKAN (RP)</label>
+                                                        <input type="text" id="inputRupiahTarik"
+                                                            class="form-control" placeholder="Contoh: 50000" required
+                                                            autocomplete="off">
+
+                                                        <input type="hidden" name="jumlah" id="inputJumlahAsliTarik"
+                                                            min="1000" required>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label text-muted small fw-semibold">CATATAN
+                                                            / KETERANGAN</label>
+                                                        <input type="text" name="keterangan" class="form-control"
+                                                            placeholder="Contoh: Buat ongkos bensin">
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label text-muted small fw-semibold">PIN
+                                                            KEAMANAN (6 DIGIT)</label>
+                                                        <input type="password" name="pin" class="form-control"
+                                                            maxlength="6" placeholder="******" required
+                                                            autocomplete="off">
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer border-0 pt-0">
+                                                    <button type="button" class="btn btn-secondary rounded-3"
+                                                        data-bs-dismiss="modal">Batal</button>
+                                                    <button type="submit"
+                                                        class="btn btn-warning rounded-3 px-4 text-dark fw-bold">Tarik
+                                                        Sekarang</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </tbody>
                         </table>
                         <div class="mt-4 w-100">
@@ -390,6 +450,24 @@
                 this.value = '';
             }
         });
+
+        const inputRupiahTarik = document.getElementById('inputRupiahTarik');
+        const inputJumlahAsliTarik = document.getElementById('inputJumlahAsliTarik');
+
+        if (inputRupiahTarik) {
+            inputRupiahTarik.addEventListener('input', function(e) {
+
+                let angkaMurni = this.value.replace(/[^0-9]/g, '');
+
+                inputJumlahAsliTarik.value = angkaMurni;
+
+                if(angkaMurni !== '') {
+                    this.value = new Intl.NumberFormat('id-ID').format(angkaMurni);
+                }else{
+                    this.value = '';
+                }
+            });
+        }
     </script>
 </body>
 

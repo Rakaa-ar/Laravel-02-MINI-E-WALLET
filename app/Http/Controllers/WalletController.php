@@ -48,13 +48,37 @@ class WalletController extends Controller
             'jenis' => 'required|in:masuk,keluar',
             'jumlah' => 'required|numeric|min:1000',
             'keterangan' => 'nullable|string'
+        ], [
+            'jumlah.min' => 'Nominal minimal transaksi Rp 1.000'
         ]);
+
+        $user = Auth::user();
+
+        if ($request->jenis === 'keluar') {
+            $request->validate([
+                'pin' => 'required|numeric|digits:6',
+            ], [
+                'pin.required' => 'PIN Keamanan Wajib di isi untuk tarik tunaik',
+                'pin.digits' => 'PIN harus 6 digit angka.'
+            ]);
+
+            if (!$user->pin) {
+                return back()->with('error', 'Anda belum membuat pin keamanan silahkan buat terlebih dahulu');
+            }
+            if (!Hash::check($request->pin, $user->pin)) {
+                return back()->with('error', 'PIN kemanan salah!');
+            }
+        }
 
         $dompet = Wallet::firstOrCreate(
             ['user_id' => Auth::id()],
             ['saldo' => 0]
         );
 
+        if ($request->jenis ==='keluar' && $dompet->saldo <$request->jumlah) {
+            return back()->with('error', 'Tarik Tunai Gagal: Saldo anda tidak mencukupi');
+        }
+        
         try {
             $response = Http::timeout(5)->post('http://localhost:8080/api/transaksi', [
                 'saldo_saat_ini' => (float) $dompet->saldo,
@@ -71,17 +95,27 @@ class WalletController extends Controller
             return back()->with('error', 'Koneksi ke GO gagal, pastikan server Go menyala!');
         }
 
-        $dompet->transaksi()->create([
-            'kode_transaksi' => 'TRX-' . date('YmdHis') . '-' . rand(100, 999),
-            'jenis' => $request->jenis,
-            'jumlah' => $request->jumlah,
-            'keterangan' => $request->keterangan
-        ]);
+        try {
+            DB::transaction(function () use ($dompet, $request, $result) {
+                // Catat Riwayat
+                $dompet->transaksi()->create([
+                    'kode_transaksi' => 'TRX-' . date('YmdHis') . '-' . rand(100, 999),
+                    'jenis'          => $request->jenis,
+                    'jumlah'         => $request->jumlah,
+                    'keterangan'     => $request->keterangan
+                ]);
 
-        $dompet->saldo = $result['sisa_saldo'];
-        $dompet->save();
+                // Update Saldo
+                $dompet->saldo = $result['sisa_saldo'];
+                $dompet->save();
+            });
 
-        return redirect('/dompet')->with('success', 'Transaksi sukses!');
+            //Pesan Sukses Dinamis
+            $tipeTransaksi = $request->jenis == 'masuk' ? 'Top-Up Saldo' : 'Tarik Tunai';
+            return redirect('/dompet')->with('success', $tipeTransaksi . ' Rp ' . number_format($request->jumlah, 0, ',', '.') . ' berhasil!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Sistem terputus! Gagal memproses transaksi database.');
+        }
     }
 
     public function transfer(Request $request)
