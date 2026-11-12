@@ -309,7 +309,7 @@
                                                 <button type="button" class="btn-close btn-close-white"
                                                     data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
-                                            <form action="/dompet/transaksi" method="POST">
+                                            <form action="/dompet/transaksi" method="POST" id="formTarikTunai">
                                                 @csrf
                                                 <input type="hidden" name="jenis" value="keluar">
 
@@ -321,8 +321,8 @@
                                                             class="form-control" placeholder="Contoh: 50000" required
                                                             autocomplete="off">
 
-                                                        <input type="hidden" name="jumlah" id="inputJumlahAsliTarik"
-                                                            min="1000" required>
+                                                        <input type="hidden" name="jumlah"
+                                                            id="inputJumlahAsliTarik" min="1000" required>
                                                     </div>
 
                                                     <div class="mb-3">
@@ -343,7 +343,7 @@
                                                 <div class="modal-footer border-0 pt-0">
                                                     <button type="button" class="btn btn-secondary rounded-3"
                                                         data-bs-dismiss="modal">Batal</button>
-                                                    <button type="submit"
+                                                    <button type="submit" id="btnProsesTarik"
                                                         class="btn btn-warning rounded-3 px-4 text-dark fw-bold">Tarik
                                                         Sekarang</button>
                                                 </div>
@@ -461,11 +461,36 @@
 
                 inputJumlahAsliTarik.value = angkaMurni;
 
-                if(angkaMurni !== '') {
+                if (angkaMurni !== '') {
                     this.value = new Intl.NumberFormat('id-ID').format(angkaMurni);
-                }else{
+                } else {
                     this.value = '';
                 }
+            });
+        }
+
+        const formTransfer = document.getElementById('formTransfer');
+        if (formTransfer) {
+            formTransfer.addEventListener('submit', function() {
+                const btn = document.getElementById('btnProsesTransfer');
+                setTimeout(function() {
+                    btn.disabled = true;
+                    btn.innerHTML =
+                        '<span class="spinner-border spinner-border-sm me-2"></span>Mengirim...';
+                }, 10);
+            });
+        }
+
+        // Anti Double-Click untuk Form Tarik Tunai
+        const formTarik = document.getElementById('formTarikTunai');
+        if (formTarik) {
+            formTarik.addEventListener('submit', function() {
+                const btn = document.getElementById('btnProsesTarik');
+                setTimeout(function() {
+                    btn.disabled = true;
+                    btn.innerHTML =
+                        '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+                }, 10);
             });
         }
     </script>
