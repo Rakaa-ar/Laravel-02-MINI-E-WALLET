@@ -37,10 +37,8 @@ Route::post('/dompet/transaksi', [WalletController::class, 'store']);
 Route::post('dompet/transfer', [WalletController::class, 'transfer'])->name('transfer');
 Route::post('/dompet/set-pin', [WalletController::class, 'setPin'])->name('set.pin');
 
+Route::get('/dompet/cek-penerima/{account_number}', [WalletController::class, 'cekPenerima'])->name('cek.penerima');
 Route::get('dompet/struk/{kode_transaksi}', [WalletController::class, 'cetakStruk'])->name('cetak.struk');
-
-
-
 
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

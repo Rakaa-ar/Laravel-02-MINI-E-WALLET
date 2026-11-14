@@ -85,12 +85,10 @@
                         <div class="mb-3">
                             <label for="jumlah_formatted" class="form-label text-muted small fw-semibold">NOMINAL
                                 (RP)</label>
-                            <!-- Input tampilan (NAMA DIHAPUS BIAR GAK BENTROK) -->
                             <input type="text" id="jumlah_formatted" class="form-control" placeholder="Contoh 50.000"
                                 required autocomplete="off">
-
-                            <!-- Input hidden (HANYA INI YANG DIKIRIM KE LARAVEL) -->
                             <input type="hidden" name="jumlah" id="jumlah" required>
+                            <div id="errorTopup" class="text-danger small mt-1"></div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label text-muted small fw-semibold">CATATAN / KETERANGAN</label>
@@ -181,211 +179,198 @@
                                         </td>
                                     </tr>
                                 @endforelse
-                                @if (!Auth::user()->pin)
-                                    <div
-                                        class="alert alert-warning border-0 rounded-4 mb-4 p-3 d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="bi bi-shield-lock-fill me-2 fs-5"></i>
-                                            <strong>Keamanan Akun:</strong> Anda belum membuat 6-Digit PIN Transaksi.
-                                        </div>
-                                        <button type="button" class="btn btn-dark btn-sm rounded-pill px-3"
-                                            data-bs-toggle="modal" data-bs-target="#modalSetPin">
-                                            Buat PIN Sekarang
-                                        </button>
-                                    </div>
-                                @endif
-                                <!-- Modal Transfer 6 Digit ID -->
-                                <div class="modal fade" id="modalTransfer" tabindex="-1"
-                                    aria-labelledby="modalTransferLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content text-white"
-                                            style="background-color: #141724; border: 1px solid #202436; border-radius: 16px;">
-                                            <div class="modal-header border-0 pb-0">
-                                                <h5 class="modal-title fw-bold" id="modalTransferLabel">
-                                                    <i class="bi bi-send-fill me-2 text-primary"></i>Transfer Saldo
-                                                </h5>
-                                                <button type="button" class="btn-close btn-close-white"
-                                                    data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <form action="{{ route('transfer') }}" method="POST" id="formTransfer">
-                                                @csrf
-                                                <div class="modal-body">
-                                                    <div class="mb-3">
-                                                        <label class="form-label text-muted small fw-semibold">ID USER
-                                                            PENERIMA (6 DIGIT)</label>
-                                                        <input type="text" name="account_number"
-                                                            class="form-control text-center fw-bold fs-4 letter-spacing-2"
-                                                            maxlength="6" placeholder="Contoh: 345678" required
-                                                            autocomplete="off">
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label text-muted small fw-semibold">NOMINAL
-                                                            TRANSFER (RP)</label>
-                                                        <input type="text" id="inputRupiah" class="form-control"
-                                                            min="1000" placeholder="Minimal 1.000" required
-                                                            autocomplete="off">
-
-                                                        <input type="hidden" name="jumlah" id="inputJumlahAsli"
-                                                            min="1000" required>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label text-muted small fw-semibold">CATATAN
-                                                            / KETERANGAN</label>
-                                                        <input type="text" name="keterangan" class="form-control"
-                                                            placeholder="Contoh: Bayar jajan siomay">
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label text-muted small fw-semibold">PIN
-                                                            KEAMANAN (6 DIGIT)</label>
-                                                        <input type="password" name="pin" class="form-control"
-                                                            maxlength="6" placeholder="******" required
-                                                            autocomplete="off">
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer border-0 pt-0">
-                                                    <button type="button" class="btn btn-secondary rounded-3"
-                                                        data-bs-dismiss="modal">Batal</button>
-                                                    <button type="submit" id="btnProsesTransfer"
-                                                        class="btn btn-primary rounded-3 px-4">Kirim Sekarang</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Modal Setup PIN -->
-                                <div class="modal fade" id="modalSetPin" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content text-white"
-                                            style="background-color: #141724; border: 1px solid #202436; border-radius: 16px;">
-                                            <div class="modal-header border-0 pb-0">
-                                                <h5 class="modal-title fw-bold"><i
-                                                        class="bi bi-shield-lock me-2 text-warning"></i>Buat PIN
-                                                    Transaksi</h5>
-                                                <button type="button" class="btn-close btn-close-white"
-                                                    data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <form action="{{ route('set.pin') }}" method="POST">
-                                                @csrf
-                                                <div class="modal-body">
-                                                    <div class="mb-3">
-                                                        <label class="form-label text-muted small fw-semibold">PIN BARU
-                                                            (6 DIGIT ANGKA)</label>
-                                                        <input type="password" name="pin"
-                                                            class="form-control text-center fw-bold fs-4"
-                                                            maxlength="6" placeholder="******" required
-                                                            autocomplete="off">
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label
-                                                            class="form-label text-muted small fw-semibold">KONFIRMASI
-                                                            PIN</label>
-                                                        <input type="password" name="pin_confirmation"
-                                                            class="form-control text-center fw-bold fs-4"
-                                                            maxlength="6" placeholder="******" required
-                                                            autocomplete="off">
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer border-0 pt-0">
-                                                    <button type="button" class="btn btn-secondary rounded-3"
-                                                        data-bs-dismiss="modal">Batal</button>
-                                                    <button type="submit"
-                                                        class="btn btn-warning rounded-3 px-4 fw-semibold">Simpan
-                                                        PIN</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Modal Tarik Tunai -->
-                                <div class="modal fade" id="modalTarikTunai" tabindex="-1"
-                                    aria-labelledby="modalTarikTunaiLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content text-white"
-                                            style="background-color: #141724; border: 1px solid #202436; border-radius: 16px;">
-                                            <div class="modal-header border-0 pb-0">
-                                                <h5 class="modal-title fw-bold" id="modalTarikTunaiLabel">
-                                                    <i class="bi bi-cash-stack me-2 text-warning"></i>Tarik Tunai Saldo
-                                                </h5>
-                                                <button type="button" class="btn-close btn-close-white"
-                                                    data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <form action="/dompet/transaksi" method="POST" id="formTarikTunai">
-                                                @csrf
-                                                <input type="hidden" name="jenis" value="keluar">
-
-                                                <div class="modal-body">
-                                                    <div class="mb-3">
-                                                        <label class="form-label text-muted small fw-semibold">NOMINAL
-                                                            PENARIKAN (RP)</label>
-                                                        <input type="text" id="inputRupiahTarik"
-                                                            class="form-control" placeholder="Contoh: 50000" required
-                                                            autocomplete="off">
-
-                                                        <input type="hidden" name="jumlah"
-                                                            id="inputJumlahAsliTarik" min="1000" required>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label class="form-label text-muted small fw-semibold">CATATAN
-                                                            / KETERANGAN</label>
-                                                        <input type="text" name="keterangan" class="form-control"
-                                                            placeholder="Contoh: Buat ongkos bensin">
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label class="form-label text-muted small fw-semibold">PIN
-                                                            KEAMANAN (6 DIGIT)</label>
-                                                        <input type="password" name="pin" class="form-control"
-                                                            maxlength="6" placeholder="******" required
-                                                            autocomplete="off">
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer border-0 pt-0">
-                                                    <button type="button" class="btn btn-secondary rounded-3"
-                                                        data-bs-dismiss="modal">Batal</button>
-                                                    <button type="submit" id="btnProsesTarik"
-                                                        class="btn btn-warning rounded-3 px-4 text-dark fw-bold">Tarik
-                                                        Sekarang</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
                             </tbody>
                         </table>
+
                         <div class="mt-4 w-100">
                             {{ $riwayat->links() }}
                         </div>
                     </div>
+
+                    @if (!Auth::user()->pin)
+                        <div
+                            class="alert alert-warning border-0 rounded-4 mt-4 mb-0 p-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-shield-lock-fill me-2 fs-5"></i>
+                                <strong>Keamanan Akun:</strong> Anda belum membuat 6-Digit PIN Transaksi.
+                            </div>
+                            <button type="button" class="btn btn-dark btn-sm rounded-pill px-3"
+                                data-bs-toggle="modal" data-bs-target="#modalSetPin">
+                                Buat PIN Sekarang
+                            </button>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 1. Modal Transfer 6 Digit ID -->
+    <div class="modal fade" id="modalTransfer" tabindex="-1" aria-labelledby="modalTransferLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-white"
+                style="background-color: #141724; border: 1px solid #202436; border-radius: 16px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalTransferLabel">
+                        <i class="bi bi-send-fill me-2 text-primary"></i>Transfer Saldo
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <form action="{{ route('transfer') }}" method="POST" id="formTransfer">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-semibold">ID USER PENERIMA (6 DIGIT)</label>
+                            <input type="text" name="account_number" id="inputAccountNumber"
+                                class="form-control text-center fw-bold fs-4 letter-spacing-2" maxlength="6"
+                                placeholder="Contoh: 345678" required autocomplete="off">
+                            <div id="penerimaInfo" class="mt-2 text-center small fw-semibold"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-semibold">NOMINAL TRANSFER (RP)</label>
+                            <input type="text" id="inputRupiah" class="form-control" min="1000"
+                                placeholder="Minimal 1.000" required autocomplete="off">
+                            <input type="hidden" name="jumlah" id="inputJumlahAsli" min="1000" required>
+                            <div id="errorTransfer" class="text-danger small mt-1"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-semibold">CATATAN / KETERANGAN</label>
+                            <input type="text" name="keterangan" class="form-control"
+                                placeholder="Contoh: Bayar jajan siomay">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-semibold">PIN KEAMANAN (6 DIGIT)</label>
+                            <input type="password" name="pin" class="form-control" maxlength="6"
+                                placeholder="******" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-secondary rounded-3"
+                            data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" id="btnProsesTransfer" class="btn btn-primary rounded-3 px-4"
+                            disabled>Kirim Sekarang</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    <!-- SCRIPT FORMATTING RUPIAH & ANTI DOUBLE CLICK -->
+    <!-- 2. Modal Setup PIN -->
+    <div class="modal fade" id="modalSetPin" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-white"
+                style="background-color: #141724; border: 1px solid #202436; border-radius: 16px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-shield-lock me-2 text-warning"></i>Buat PIN Transaksi
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <form action="{{ route('set.pin') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-semibold">PIN BARU (6 DIGIT ANGKA)</label>
+                            <input type="password" name="pin" class="form-control text-center fw-bold fs-4"
+                                maxlength="6" placeholder="******" required autocomplete="off">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-semibold">KONFIRMASI PIN</label>
+                            <input type="password" name="pin_confirmation"
+                                class="form-control text-center fw-bold fs-4" maxlength="6" placeholder="******"
+                                required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-secondary rounded-3"
+                            data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-warning rounded-3 px-4 fw-semibold">Simpan PIN</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Modal Tarik Tunai -->
+    <div class="modal fade" id="modalTarikTunai" tabindex="-1" aria-labelledby="modalTarikTunaiLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-white"
+                style="background-color: #141724; border: 1px solid #202436; border-radius: 16px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalTarikTunaiLabel">
+                        <i class="bi bi-cash-stack me-2 text-warning"></i>Tarik Tunai Saldo
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <form action="/dompet/transaksi" method="POST" id="formTarikTunai">
+                    @csrf
+                    <input type="hidden" name="jenis" value="keluar">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-semibold">NOMINAL PENARIKAN (RP)</label>
+                            <input type="text" id="inputRupiahTarik" class="form-control"
+                                placeholder="Contoh: 50.000" required autocomplete="off">
+                            <input type="hidden" name="jumlah" id="inputJumlahAsliTarik" min="1000" required>
+                            <div id="errorTarik" class="text-danger small mt-1">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-semibold">CATATAN / KETERANGAN</label>
+                            <input type="text" name="keterangan" class="form-control"
+                                placeholder="Contoh: Buat ongkos bensin">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-semibold">PIN KEAMANAN (6 DIGIT)</label>
+                            <input type="password" name="pin" class="form-control" maxlength="6"
+                                placeholder="******" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-secondary rounded-3"
+                            data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" id="btnProsesTarik"
+                            class="btn btn-warning rounded-3 px-4 text-dark fw-bold">Tarik Sekarang</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Helper tampil & hapus error inline
+        function tampilError(inputEl, errorEl, pesan) {
+            inputEl.classList.add('is-invalid');
+            errorEl.innerHTML = `<i class="bi bi-exclamation-circle-fill me-1"></i>${pesan}`;
+        }
+
+        function hapusError(inputEl, errorEl) {
+            inputEl.classList.remove('is-invalid');
+            errorEl.innerHTML = '';
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('formTransaksi');
             const btn = document.getElementById('btnProses');
             const inputFormatted = document.getElementById('jumlah_formatted');
             const inputHidden = document.getElementById('jumlah');
+            const errorTopup = document.getElementById('errorTopup');
             const alertBox = document.getElementById('alert-box');
 
-            // Auto-hide alert notification
             if (alertBox) {
                 setTimeout(function() {
                     alertBox.style.transition = "opacity 0.5s ease";
                     alertBox.style.opacity = "0";
-                    setTimeout(function() {
-                        alertBox.remove();
-                    }, 500);
+                    setTimeout(() => alertBox.remove(), 500);
                 }, 3000);
             }
 
-            // Real-time format mata uang Rupiah
             function updateJumlah() {
+                hapusError(inputFormatted, errorTopup);
                 let angka = inputFormatted.value.replace(/[^,\d]/g, '');
                 let split = angka.split(',');
                 let sisa = split[0].length % 3;
@@ -399,100 +384,130 @@
 
                 rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
                 inputFormatted.value = rupiah;
-
-                // Isi nilai angka murni ke input hidden
                 inputHidden.value = split[0];
             }
 
             inputFormatted.addEventListener('input', updateJumlah);
             inputFormatted.addEventListener('keyup', updateJumlah);
 
-            // Handler submit form & Anti Double-Click
             form.addEventListener('submit', function(e) {
                 updateJumlah();
 
                 if (!inputHidden.value || parseInt(inputHidden.value) < 1000) {
                     e.preventDefault();
-                    alert('Nominal minimal transaksi adalah Rp 1.000');
+                    tampilError(inputFormatted, errorTopup, 'Nominal minimal top-up adalah Rp 1.000');
                     return false;
                 }
 
-                // Beri jeda 10ms agar browser sempat mengantrekan request POST
                 setTimeout(function() {
                     btn.disabled = true;
-                    btn.innerHTML =
-                        '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses...';
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses...';
                 }, 10);
             });
         });
 
-        document.getElementById('formTransfer').addEventListener('submit', function() {
-            const btn = document.getElementById('btnProsesTransfer');
-            setTimeout(function() {
-                btn.disabled = true;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengirim...';
-            }, 10);
-        });
+        // Format Rupiah & Validasi Transfer
         const inputRupiah = document.getElementById('inputRupiah');
         const inputJumlahAsli = document.getElementById('inputJumlahAsli');
+        const errorTransfer = document.getElementById('errorTransfer');
+        const formTransfer = document.getElementById('formTransfer');
 
-        inputRupiah.addEventListener('input', function(e) {
-            // Hapus semua karakter selain angka
-            let angkaMurni = this.value.replace(/[^0-9]/g, '');
-
-            // Simpan angka murni ke input hidden untuk dikirim ke Controller
-            inputJumlahAsli.value = angkaMurni;
-
-            // Format angka murninya jadi format ribuan Indonesia 
-            if (angkaMurni !== '') {
-                this.value = new Intl.NumberFormat('id-ID').format(angkaMurni);
-            } else {
-                this.value = '';
-            }
-        });
-
-        const inputRupiahTarik = document.getElementById('inputRupiahTarik');
-        const inputJumlahAsliTarik = document.getElementById('inputJumlahAsliTarik');
-
-        if (inputRupiahTarik) {
-            inputRupiahTarik.addEventListener('input', function(e) {
-
+        if (inputRupiah) {
+            inputRupiah.addEventListener('input', function() {
+                hapusError(inputRupiah, errorTransfer);
                 let angkaMurni = this.value.replace(/[^0-9]/g, '');
-
-                inputJumlahAsliTarik.value = angkaMurni;
-
-                if (angkaMurni !== '') {
-                    this.value = new Intl.NumberFormat('id-ID').format(angkaMurni);
-                } else {
-                    this.value = '';
-                }
+                inputJumlahAsli.value = angkaMurni;
+                this.value = angkaMurni !== '' ? new Intl.NumberFormat('id-ID').format(angkaMurni) : '';
             });
         }
 
-        const formTransfer = document.getElementById('formTransfer');
         if (formTransfer) {
-            formTransfer.addEventListener('submit', function() {
+            formTransfer.addEventListener('submit', function(e) {
+                if (!inputJumlahAsli.value || parseInt(inputJumlahAsli.value) < 1000) {
+                    e.preventDefault();
+                    tampilError(inputRupiah, errorTransfer, 'Nominal minimal transfer adalah Rp 1.000');
+                    return false;
+                }
+
                 const btn = document.getElementById('btnProsesTransfer');
                 setTimeout(function() {
                     btn.disabled = true;
-                    btn.innerHTML =
-                        '<span class="spinner-border spinner-border-sm me-2"></span>Mengirim...';
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengirim...';
                 }, 10);
             });
         }
 
-        // Anti Double-Click untuk Form Tarik Tunai
+        // Format Rupiah & Validasi Tarik Tunai
+        const inputRupiahTarik = document.getElementById('inputRupiahTarik');
+        const inputJumlahAsliTarik = document.getElementById('inputJumlahAsliTarik');
+        const errorTarik = document.getElementById('errorTarik');
         const formTarik = document.getElementById('formTarikTunai');
+
+        if (inputRupiahTarik) {
+            inputRupiahTarik.addEventListener('input', function() {
+                hapusError(inputRupiahTarik, errorTarik);
+                let angkaMurni = this.value.replace(/[^0-9]/g, '');
+                inputJumlahAsliTarik.value = angkaMurni;
+                this.value = angkaMurni !== '' ? new Intl.NumberFormat('id-ID').format(angkaMurni) : '';
+            });
+        }
+
         if (formTarik) {
-            formTarik.addEventListener('submit', function() {
+            formTarik.addEventListener('submit', function(e) {
+                if (!inputJumlahAsliTarik.value || parseInt(inputJumlahAsliTarik.value) < 1000) {
+                    e.preventDefault();
+                    tampilError(inputRupiahTarik, errorTarik, 'Nominal minimal penarikan adalah Rp 1.000');
+                    return false;
+                }
+
                 const btn = document.getElementById('btnProsesTarik');
                 setTimeout(function() {
                     btn.disabled = true;
-                    btn.innerHTML =
-                        '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
                 }, 10);
             });
         }
+
+        // Cek Nama Penerima Real-Time (Fetch API)
+        const inputAccountNumber = document.getElementById('inputAccountNumber');
+        const penerimaInfo = document.getElementById('penerimaInfo');
+        const btnProsesTransfer = document.getElementById('btnProsesTransfer');
+
+        if (inputAccountNumber) {
+            inputAccountNumber.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+                const kode = this.value;
+
+                if (kode.length < 6) {
+                    penerimaInfo.innerHTML = '';
+                    if (btnProsesTransfer) btnProsesTransfer.disabled = true;
+                    return;
+                }
+
+                penerimaInfo.innerHTML =
+                    '<span class="text-secondary"><span class="spinner-border spinner-border-sm me-1"></span>Mengecek ID...</span>';
+
+                fetch(`/dompet/cek-penerima/${kode}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status) {
+                            penerimaInfo.innerHTML =
+                                `<span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>Penerima: ${data.nama}</span>`;
+                            if (btnProsesTransfer) btnProsesTransfer.disabled = false;
+                        } else {
+                            const pesanError = data.pesan || data.message || 'ID User tidak ditemukan!';
+                            penerimaInfo.innerHTML =
+                                `<span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i>${pesanError}</span>`;
+                            if (btnProsesTransfer) btnProsesTransfer.disabled = true;
+                        }
+                    })
+                    .catch(() => {
+                        penerimaInfo.innerHTML = '<span class="text-danger">Gagal mengecek ID penerima.</span>';
+                        if (btnProsesTransfer) btnProsesTransfer.disabled = true;
+                    });
+            });
+        }
+        
     </script>
 </body>
 

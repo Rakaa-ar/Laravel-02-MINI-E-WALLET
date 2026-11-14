@@ -75,10 +75,10 @@ class WalletController extends Controller
             ['saldo' => 0]
         );
 
-        if ($request->jenis ==='keluar' && $dompet->saldo <$request->jumlah) {
+        if ($request->jenis === 'keluar' && $dompet->saldo < $request->jumlah) {
             return back()->with('error', 'Tarik Tunai Gagal: Saldo anda tidak mencukupi');
         }
-        
+
         try {
             $response = Http::timeout(5)->post('http://localhost:8080/api/transaksi', [
                 'saldo_saat_ini' => (float) $dompet->saldo,
@@ -236,5 +236,29 @@ class WalletController extends Controller
         $user->save();
 
         return back()->with('success', 'PIN transaksi berhasil dibuat! Silakan lanjutkan transaksi.');
+    }
+
+    public function cekPenerima($account_number)
+    {
+        if ((string) Auth::user()->account_number === (string) $account_number) {
+            return response()->json([
+                'status' => false,
+                'pesan' => 'Tidak bisa transfer ke id kamu sendiri'
+            ]);
+        }
+
+        $penerima = User::where('account_number', $account_number)->first();
+
+        if (!$penerima) {
+            return response()->json([
+                'status' => false,
+                'pesan' => 'Maaf ID User Tidak di temukan'
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'nama' => $penerima->name
+        ]);
     }
 }
